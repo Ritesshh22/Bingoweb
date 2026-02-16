@@ -299,6 +299,17 @@ const Multiplayer = () => {
                     )}
                 </div>
                 <button onClick={navigateHome} className="btn-secondary" style={{ marginTop: '2rem', opacity: 0.6 }}>Exit Game</button>
+
+                <footer style={{
+                    marginTop: '2rem',
+                    padding: '1rem 0',
+                    width: '100%',
+                    textAlign: 'center',
+                    opacity: 0.6
+                }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>Ritesh & Sahil</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>Made 🇮🇳 Bharat</p>
+                </footer>
             </div>
         );
     }
