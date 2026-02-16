@@ -230,38 +230,73 @@ const SinglePlayer = () => {
 
                 {status === 'end' && (
                     <div className="result-overlay" style={{
-                        position: 'absolute',
+                        position: 'fixed',
                         top: 0,
                         left: 0,
-                        width: '100%',
-                        height: '100%',
-                        background: 'rgba(0,0,0,0.85)',
+                        width: '100vw',
+                        height: '100vh',
+                        background: 'rgba(15, 12, 41, 0.95)',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        zIndex: 100,
-                        flexDirection: 'column',
-                        backdropFilter: 'blur(5px)'
+                        zIndex: 1000,
+                        overflowY: 'auto',
+                        padding: '20px'
                     }}>
-                        <div className="glass-panel" style={{ padding: '3rem', border: '2px solid var(--primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                            <h1 style={{ fontSize: '3rem', color: headerText.includes('You Won') ? '#00ff88' : '#ff0055', textTransform: 'uppercase', textShadow: '0 0 20px currentColor' }}>
-                                {headerText.includes('You Won') ? 'WINNER!' : 'GAME OVER'}
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                            <h1 style={{
+                                fontSize: '3.5rem',
+                                color: headerText.includes('You Won') ? '#00ff88' : '#ff0055',
+                                textTransform: 'uppercase',
+                                textShadow: `0 0 20px ${headerText.includes('You Won') ? '#00ff8888' : '#ff005588'}`,
+                                margin: '0 0 10px 0'
+                            }}>
+                                {headerText.includes('You Won') ? 'VICTORY!' : 'DEFEAT!'}
                             </h1>
-                            <p style={{ fontSize: '1.5rem', opacity: 0.9 }}>{headerText}</p>
+                            <p style={{ fontSize: '1.2rem', opacity: 0.9, marginBottom: '20px' }}>{headerText}</p>
 
-                            {headerText.includes('You Won') ? (
-                                <div style={{ fontSize: '4rem', margin: '20px 0' }}>🏆</div>
-                            ) : (
-                                <div style={{ fontSize: '4rem', margin: '20px 0' }}>💔</div>
-                            )}
+                            <div style={{ display: 'flex', gap: '30px', width: '100%', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                {/* Player's Grid Final State */}
+                                <div className="result-board-container" style={{ textAlign: 'center', flex: '1 1 250px', maxWidth: '300px' }}>
+                                    <h3 style={{ marginBottom: '10px', color: 'var(--secondary)', fontSize: '1rem' }}>Your Final Board</h3>
+                                    <div className="grid-container" style={{
+                                        display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px', width: '100%'
+                                    }}>
+                                        {grid.map((num, i) => (
+                                            <div key={i} style={{
+                                                aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                background: marked.includes(num) ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                borderRadius: '4px', fontSize: '0.8rem', color: marked.includes(num) ? 'white' : '#888'
+                                            }}>{num}</div>
+                                        ))}
+                                    </div>
+                                </div>
 
-                            <button onClick={() => window.location.reload()} className="btn-primary" style={{ fontSize: '1.2rem', padding: '15px 40px' }}>
-                                {headerText.includes('You Won') ? 'Play Again' : 'Try Again'}
-                            </button>
+                                {/* Robot's Grid Final State */}
+                                <div className="result-board-container" style={{ textAlign: 'center', flex: '1 1 250px', maxWidth: '300px' }}>
+                                    <h3 style={{ marginBottom: '10px', color: 'var(--primary)', fontSize: '1rem' }}>Robot's Final Board</h3>
+                                    <div className="grid-container" style={{
+                                        display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px', width: '100%'
+                                    }}>
+                                        {robotGrid.map((num, i) => (
+                                            <div key={i} style={{
+                                                aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                background: robotMarked.includes(num) ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                borderRadius: '4px', fontSize: '0.8rem', color: robotMarked.includes(num) ? 'white' : '#888'
+                                            }}>{num}</div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
 
-                            <button onClick={() => window.location.href = '/'} className="btn-secondary">
-                                Main Menu
-                            </button>
+                            <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
+                                <button onClick={() => window.location.reload()} className="btn-primary" style={{ padding: '12px 30px' }}>
+                                    Play Again
+                                </button>
+                                <button onClick={() => window.location.href = '/'} className="btn-secondary" style={{ padding: '12px 30px' }}>
+                                    Exit to Menu
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}

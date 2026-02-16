@@ -287,14 +287,66 @@ const Multiplayer = () => {
                     </div>
 
                     {view === 'result' && (
-                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.9)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <h1 style={{ fontSize: '4rem', color: gameData.winner === user.uid ? '#00ff88' : '#ff0055' }}>
-                                {gameData.winner === user.uid ? 'VICTORY!' : 'DEFEAT!'}
-                            </h1>
-                            <div style={{ fontSize: '5rem', margin: '1rem' }}>
-                                {gameData.winner === user.uid ? '👑' : '☠️'}
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                            background: 'rgba(15, 12, 41, 0.95)', zIndex: 1000,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            overflowY: 'auto', padding: '20px'
+                        }}>
+                            <div className="glass-panel" style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <h1 style={{
+                                    fontSize: '3.5rem',
+                                    color: gameData.winner === user.uid ? '#00ff88' : gameData.winner === 'DRAW' ? '#ffcc00' : '#ff0055',
+                                    textShadow: `0 0 20px ${gameData.winner === user.uid ? '#00ff8888' : '#ff005588'}`
+                                }}>
+                                    {gameData.winner === user.uid ? 'VICTORY!' : gameData.winner === 'DRAW' ? 'DRAW!' : 'DEFEAT!'}
+                                </h1>
+
+                                <div style={{ display: 'flex', gap: '30px', width: '100%', flexWrap: 'wrap', justifyContent: 'center', margin: '2rem 0' }}>
+                                    {/* My Final Board */}
+                                    <div className="result-board-container" style={{ textAlign: 'center', flex: '1 1 250px', maxWidth: '300px' }}>
+                                        <p style={{ marginBottom: '10px', color: 'var(--secondary)', fontWeight: 'bold' }}>Your Board</p>
+                                        <div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '5px', width: '100%' }}>
+                                            {myGrid.map((num, i) => {
+                                                const isMarked = gameData?.marked?.includes(num);
+                                                return (
+                                                    <div key={i} style={{
+                                                        aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        background: isMarked ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                        borderRadius: '4px', fontSize: '0.8rem', color: isMarked ? 'white' : '#888'
+                                                    }}>{num}</div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Opponent's Final Board */}
+                                    <div className="result-board-container" style={{ textAlign: 'center', flex: '1 1 250px', maxWidth: '300px' }}>
+                                        <p style={{ marginBottom: '10px', color: 'var(--primary)', fontWeight: 'bold' }}>{oppName}'s Board</p>
+                                        <div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '5px', width: '100%' }}>
+                                            {gameData?.players[opponentId]?.grid.map((num, i) => {
+                                                const isMarked = gameData?.marked?.includes(num);
+                                                return (
+                                                    <div key={i} style={{
+                                                        aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        background: isMarked ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
+                                                        borderRadius: '4px', fontSize: '0.8rem', color: isMarked ? 'white' : '#888'
+                                                    }}>{num}</div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '15px' }}>
+                                    <button className="btn-primary" style={{ padding: '12px 30px' }} onClick={() => window.location.reload()}>
+                                        Play Again
+                                    </button>
+                                    <button className="btn-secondary" style={{ padding: '12px 30px' }} onClick={navigateHome}>
+                                        Exit to Menu
+                                    </button>
+                                </div>
                             </div>
-                            <button className="btn-primary" onClick={navigateHome}>Back to Menu</button>
                         </div>
                     )}
                 </div>
