@@ -1,0 +1,235 @@
+:root {
+  --primary: #FF0055;
+  --secondary: #00E5FF;
+  --bg-dark: #0F0C29;
+  --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  --glass: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --text-light: #ffffff;
+  --font-main: 'Outfit', sans-serif;
+  --font-heading: 'Fredoka', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-dark);
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50' y='50' font-family='sans-serif' font-weight='900' font-size='24' fill='rgba(255,255,255,0.04)' transform='rotate(-30 50 50)' text-anchor='middle' dominant-baseline='middle'%3EBINGO%3C/text%3E%3C/svg%3E"),
+    var(--bg-gradient);
+  min-height: 100vh;
+  color: var(--text-light);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-heading);
+}
+
+button {
+  font-family: var(--font-main);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d40047;
+}
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 85, 0.6);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--secondary);
+  color: var(--secondary);
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: var(--secondary);
+  color: #000;
+}
+
+.input-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.input-glass:focus {
+  border-color: var(--secondary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* New Animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  }
+
+  50% {
+    text-shadow: 0 0 25px rgba(0, 229, 255, 0.8), 0 0 40px rgba(0, 229, 255, 0.4);
+  }
+
+  100% {
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  }
+}
+
+.app-container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.hero h1 {
+  animation: float 4s ease-in-out infinite, pulse 3s infinite;
+}
+
+.bingo-header h1 {
+  animation: pulse 2s infinite;
+}
+
+.grid-container {
+  perspective: 1000px;
+}
+
+.grid-cell {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.grid-cell:hover:not(.marked) {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  #root {
+    padding: 1rem 0.5rem;
+  }
+
+  .glass-panel {
+    padding: 1.5rem 1rem;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem !important;
+  }
+
+  .grid-container {
+    gap: 5px !important;
+  }
+
+  .grid-cell {
+    font-size: 0.9rem;
+    border-radius: 4px !important;
+  }
+
+  .navbar {
+    padding: 10px !important;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .user-info {
+    font-size: 0.8rem;
+  }
+
+  h1 {
+    font-size: 2rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+}
