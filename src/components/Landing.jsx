@@ -4,6 +4,8 @@ import { auth, googleProvider, facebookProvider } from '../firebase';
 import { signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
 import { FaPlay, FaUserFriends, FaQuestionCircle, FaGoogle, FaUserSecret } from 'react-icons/fa';
 
+import Footer from './Footer';
+
 const Landing = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
@@ -112,23 +114,10 @@ const Landing = () => {
                 </div>
             </header>
 
-            <footer style={{
-                marginTop: '3rem',
-                padding: '2rem 0',
-                borderTop: '1px solid var(--glass-border)',
-                width: '100%',
-                textAlign: 'center',
-                opacity: 0.8
-            }}>
-                <p style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '5px' }}>
-                    Ritesh & Sahil
-                </p>
-                <p style={{ fontSize: '0.9rem', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    Made <span>🇮🇳</span> Bharat
-                </p>
-            </footer>
+            <Footer />
         </div>
     );
 };
+
 
 export default Landing;

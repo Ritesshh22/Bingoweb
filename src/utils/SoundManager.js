@@ -50,19 +50,50 @@ class SoundManager {
         this.tone(400, 0.15, 'triangle');
     }
 
+    sayBingo() {
+        if (!('speechSynthesis' in window)) return;
+
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance("BINGO!");
+
+        // Try to find a good female/male voice
+        const voices = window.speechSynthesis.getVoices();
+        // Preference: English female voice for clear "Bingo" announcement
+        const preferredVoice = voices.find(v => v.name.includes('Google UK English Female') || v.name.includes('Female')) || voices[0];
+
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        utterance.pitch = 1.2; // Slightly excited
+        utterance.rate = 1.0;
+        utterance.volume = 1.0;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
     playWin() {
-        // Victory Arpeggio (C Major)
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-        let time = 0;
-        notes.forEach((freq) => {
-            setTimeout(() => this.tone(freq, 0.3, 'square'), time);
-            time += 150;
+        // First announce in human voice
+        this.sayBingo();
+
+        // Celebratory "B-I-N-G-O" Jingle
+        const notes = [
+            { f: 523.25, d: 0.1, t: 0 },   // B
+            { f: 659.25, d: 0.1, t: 150 }, // I
+            { f: 783.99, d: 0.1, t: 300 }, // N
+            { f: 880.00, d: 0.1, t: 450 }, // G
+            { f: 1046.50, d: 0.4, t: 600 } // O!
+        ];
+
+        notes.forEach((note) => {
+            setTimeout(() => this.tone(note.f, note.d + 0.2, 'square'), note.t + 500); // Slight delay for voice to start
         });
-        // Final chordish sound
+
+        // Add some "confetti" sounds (high pips)
         setTimeout(() => {
-            this.tone(523.25, 0.8, 'sine');
-            this.tone(783.99, 0.8, 'sine');
-        }, time + 100);
+            this.tone(1318.51, 0.1, 'sine');
+            this.tone(1567.98, 0.1, 'sine');
+        }, 1500);
     }
 
     playLose() {

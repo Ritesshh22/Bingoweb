@@ -25,6 +25,17 @@ const SinglePlayer = () => {
 
     const [turn, setTurn] = useState('player'); // player, robot
 
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (status === 'playing') {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [status]);
+
     // Initialize Grid with 1-25 randomized
     const randomizeGrid = () => {
         let nums = Array.from({ length: 25 }, (_, i) => i + 1);
@@ -40,7 +51,7 @@ const SinglePlayer = () => {
         if (grid.some(n => n === null)) {
             randomizeGrid();
         }
-        sounds.init(); // Initialize audio context on user gesture
+        sounds.init();
         // Setup Robot Grid
         let robotNums = Array.from({ length: 25 }, (_, i) => i + 1);
         robotNums.sort(() => Math.random() - 0.5);
@@ -65,24 +76,19 @@ const SinglePlayer = () => {
 
     const handleCellClick = (number) => {
         if (status !== 'playing' || turn !== 'player' || marked.includes(number)) return;
-
         playTurn(number);
     };
 
     const playTurn = (number) => {
-        // Mark for Player
         const newMarked = [...marked, number];
         setMarked(newMarked);
 
-        // Sound for player
         if (turn === 'player') sounds.playClick();
         else sounds.playRobotMove();
 
-        // Mark for Robot (it has same numbers)
         const newRobotMarked = [...robotMarked, number];
         setRobotMarked(newRobotMarked);
 
-        // Check Wins
         const playerWinData = checkWin(newMarked, grid);
         setWonLines(playerWinData.lines);
 
@@ -112,7 +118,6 @@ const SinglePlayer = () => {
             return;
         }
 
-        // Switch Turn
         setTurn(prev => prev === 'player' ? 'robot' : 'player');
     };
 
@@ -120,9 +125,6 @@ const SinglePlayer = () => {
         if (status === 'playing' && turn === 'robot') {
             setHeaderText("Robot is thinking...");
             const timer = setTimeout(() => {
-                // Robot Strategy: Pick random unmarked number
-                // Improve: Robot picks number that helps it? 
-                // For now random valid move.
                 const allNums = Array.from({ length: 25 }, (_, i) => i + 1);
                 const available = allNums.filter(n => !marked.includes(n));
                 if (available.length > 0) {
@@ -130,7 +132,7 @@ const SinglePlayer = () => {
                     playTurn(pick);
                     setHeaderText("Your Turn");
                 }
-            }, 1000); // 1s delay
+            }, 1000);
             return () => clearTimeout(timer);
         }
     }, [turn, status, marked]);
@@ -141,178 +143,125 @@ const SinglePlayer = () => {
     };
 
     return (
-        <div className="game-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', justifyContent: 'center' }}>
-            <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', textAlign: 'center' }}>
-                <h2 style={{ marginBottom: '1rem', color: 'var(--secondary)' }}>{headerText}</h2>
+        <>
+            <div className="game-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', justifyContent: 'center', padding: '20px' }}>
+                <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', textAlign: 'center' }}>
+                    <h2 style={{ marginBottom: '1rem', color: 'var(--secondary)' }}>{headerText}</h2>
 
-                {status === 'setup' && (
-                    <div className="setup-controls" style={{ marginBottom: '20px' }}>
-                        <p style={{ marginBottom: '1rem', opacity: 0.8 }}>Numbers are randomized for you.</p>
-                        <button onClick={randomizeGrid} className="btn-secondary" style={{ marginRight: '10px' }}> <FaUndo /> Shuffle</button>
-                        <button onClick={startGame} className="btn-primary">Start Game</button>
-                    </div>
-                )}
+                    {status === 'setup' && (
+                        <div className="setup-controls" style={{ marginBottom: '20px' }}>
+                            <p style={{ marginBottom: '1rem', opacity: 0.8 }}>Numbers are randomized for you.</p>
+                            <button onClick={randomizeGrid} className="btn-secondary" style={{ marginRight: '10px' }}> <FaUndo /> Shuffle</button>
+                            <button onClick={startGame} className="btn-primary">Start Game</button>
+                        </div>
+                    )}
 
-                {status !== 'setup' && (
-                    <div className="bingo-header" style={{ marginBottom: '10px' }}>
-                        <h1 style={{ fontSize: '3rem', letterSpacing: '10px', color: 'var(--primary)', margin: 0, textShadow: '0 0 10px rgba(255,0,85,0.5)' }}>BINGO</h1>
-                    </div>
-                )}
+                    {status !== 'setup' && (
+                        <div className="bingo-header" style={{ marginBottom: '10px' }}>
+                            <h1 style={{ fontSize: '3rem', letterSpacing: '10px', color: 'var(--primary)', margin: 0, textShadow: '0 0 10px rgba(255,0,85,0.5)' }}>BINGO</h1>
+                        </div>
+                    )}
 
-                <div className="grid-container" style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(5, 1fr)',
-                    gap: '10px',
-                    margin: '0 auto',
-                    width: '100%',
-                    maxWidth: '400px',
-                    position: 'relative'
-                }}>
-                    {/* Strike-through lines */}
-                    <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
-                        {wonLines.map((lineIndex) => {
-                            let x1, y1, x2, y2;
-                            if (lineIndex < 5) { // Row
-                                x1 = '0%'; x2 = '100%';
-                                y1 = y2 = `${lineIndex * 20 + 10}%`;
-                            } else if (lineIndex < 10) { // Col
-                                x1 = x2 = `${(lineIndex - 5) * 20 + 10}%`;
-                                y1 = '0%'; y2 = '100%';
-                            } else if (lineIndex === 10) { // Diag \
-                                x1 = '0%'; y1 = '0%'; x2 = '100%'; y2 = '100%';
-                            } else { // Diag /
-                                x1 = '100%'; y1 = '0%'; x2 = '0%'; y2 = '100%';
-                            }
-                            return <line key={lineIndex} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--primary)" strokeWidth="5" strokeLinecap="round" style={{ filter: 'drop-shadow(0 0 5px var(--primary))' }} />;
+                    <div className="grid-container" style={{
+                        display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px', margin: '0 auto', width: '100%', maxWidth: '400px', position: 'relative'
+                    }}>
+                        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
+                            {wonLines.map((lineIndex) => {
+                                let x1, y1, x2, y2;
+                                if (lineIndex < 5) { x1 = '0%'; x2 = '100%'; y1 = y2 = `${lineIndex * 20 + 10}%`; }
+                                else if (lineIndex < 10) { x1 = x2 = `${(lineIndex - 5) * 20 + 10}%`; y1 = '0%'; y2 = '100%'; }
+                                else if (lineIndex === 10) { x1 = '0%'; y1 = '0%'; x2 = '100%'; y2 = '100%'; }
+                                else { x1 = '100%'; y1 = '0%'; x2 = '0%'; y2 = '100%'; }
+                                return <line key={lineIndex} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--primary)" strokeWidth="5" strokeLinecap="round" style={{ filter: 'drop-shadow(0 0 5px var(--primary))' }} />;
+                            })}
+                        </svg>
+                        {grid.map((num, i) => {
+                            const isMarked = marked.includes(num);
+                            const isRobotTurn = turn === 'robot';
+                            return (
+                                <div key={i} onClick={() => handleCellClick(num)} className={`grid-cell ${isMarked ? 'marked' : ''}`}
+                                    style={{
+                                        aspectRatio: '1', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                        background: isMarked ? 'var(--primary)' : 'rgba(255,255,255,0.1)', borderRadius: '8px',
+                                        cursor: (status === 'playing' && !isMarked && !isRobotTurn) ? 'pointer' : 'default',
+                                        fontSize: '1.1rem', fontWeight: 'bold', color: isMarked ? 'white' : 'var(--secondary)',
+                                        transition: 'transform 0.2s', boxShadow: isMarked ? '0 0 10px var(--primary)' : 'none',
+                                        transform: isMarked ? 'scale(0.95)' : 'scale(1)'
+                                    }}>
+                                    {num || ''}
+                                </div>
+                            );
                         })}
-                    </svg>
-                    {grid.map((num, i) => {
-                        const isMarked = marked.includes(num);
-                        const isRobotTurn = turn === 'robot';
-                        return (
-                            <div
-                                key={i}
-                                onClick={() => handleCellClick(num)}
-                                className={`grid-cell ${isMarked ? 'marked' : ''}`}
-                                style={{
-                                    aspectRatio: '1',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    background: isMarked ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
-                                    borderRadius: '8px',
-                                    cursor: (status === 'playing' && !isMarked && !isRobotTurn) ? 'pointer' : 'default',
-                                    fontSize: '1.2rem',
-                                    fontWeight: 'bold',
-                                    color: isMarked ? 'white' : 'var(--secondary)',
-                                    transition: 'transform 0.2s',
-                                    boxShadow: isMarked ? '0 0 10px var(--primary)' : 'none',
-                                    transform: isMarked ? 'scale(0.95)' : 'scale(1)'
-                                }}
-                            >
-                                {num || ''}
-                            </div>
-                        );
-                    })}
+                    </div>
+
+                    {status !== 'setup' && (
+                        <div className="game-info" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><FaUser /> You</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><FaRobot /> Robot</div>
+                        </div>
+                    )}
                 </div>
 
-                {status !== 'setup' && (
-                    <div className="game-info" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <FaUser /> You
-                            {/* Show BINGO progress if possible */}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <FaRobot /> Robot
-                        </div>
-                    </div>
+                {status !== 'end' && (
+                    <button onClick={() => window.location.href = '/'} className="btn-secondary" style={{ marginTop: '2rem', opacity: 0.6 }}>
+                        Exit Game
+                    </button>
                 )}
 
-                {status === 'end' && (
-                    <div className="result-overlay" style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        background: 'rgba(15, 12, 41, 0.95)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000,
-                        overflowY: 'auto',
-                        padding: '20px'
-                    }}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                            <h1 style={{
-                                fontSize: '3.5rem',
-                                color: headerText.includes('You Won') ? '#00ff88' : '#ff0055',
-                                textTransform: 'uppercase',
-                                textShadow: `0 0 20px ${headerText.includes('You Won') ? '#00ff8888' : '#ff005588'}`,
-                                margin: '0 0 10px 0'
-                            }}>
-                                {headerText.includes('You Won') ? 'VICTORY!' : 'DEFEAT!'}
-                            </h1>
-                            <p style={{ fontSize: '1.2rem', opacity: 0.9, marginBottom: '20px' }}>{headerText}</p>
-
-                            <div style={{ display: 'flex', gap: '30px', width: '100%', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                {/* Player's Grid Final State */}
-                                <div className="result-board-container" style={{ textAlign: 'center', flex: '1 1 250px', maxWidth: '300px' }}>
-                                    <h3 style={{ marginBottom: '10px', color: 'var(--secondary)', fontSize: '1rem' }}>Your Final Board</h3>
-                                    <div className="grid-container" style={{
-                                        display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px', width: '100%'
-                                    }}>
-                                        {grid.map((num, i) => (
-                                            <div key={i} style={{
-                                                aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                background: marked.includes(num) ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                                borderRadius: '4px', fontSize: '0.8rem', color: marked.includes(num) ? 'white' : '#888'
-                                            }}>{num}</div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Robot's Grid Final State */}
-                                <div className="result-board-container" style={{ textAlign: 'center', flex: '1 1 250px', maxWidth: '300px' }}>
-                                    <h3 style={{ marginBottom: '10px', color: 'var(--primary)', fontSize: '1rem' }}>Robot's Final Board</h3>
-                                    <div className="grid-container" style={{
-                                        display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '5px', width: '100%'
-                                    }}>
-                                        {robotGrid.map((num, i) => (
-                                            <div key={i} style={{
-                                                aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                background: robotMarked.includes(num) ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
-                                                borderRadius: '4px', fontSize: '0.8rem', color: robotMarked.includes(num) ? 'white' : '#888'
-                                            }}>{num}</div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                                <button onClick={() => window.location.reload()} className="btn-primary" style={{ padding: '12px 30px' }}>
-                                    Play Again
-                                </button>
-                                <button onClick={() => window.location.href = '/'} className="btn-secondary" style={{ padding: '12px 30px' }}>
-                                    Exit to Menu
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <footer style={{ marginTop: '1.5rem', padding: '1rem 0', width: '100%', textAlign: 'center', opacity: 0.6 }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>Ritesh & Sahil</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>Made 🇮🇳 Bharat</p>
+                </footer>
             </div>
 
-            <footer style={{
-                marginTop: '1.5rem',
-                padding: '1rem 0',
-                width: '100%',
-                textAlign: 'center',
-                opacity: 0.6
-            }}>
-                <p style={{ fontSize: '0.9rem', fontWeight: '600' }}>Ritesh & Sahil</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>Made 🇮🇳 Bharat</p>
-            </footer>
-        </div>
+            {status === 'end' && (
+                <div className="result-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                    background: 'rgba(15, 12, 41, 0.98)', zIndex: 99999,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '15px', pointerEvents: 'auto'
+                }}>
+                    <div className="glass-panel" style={{
+                        width: '95%', maxWidth: '600px', maxHeight: '95vh', overflowY: 'auto',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        boxShadow: '0 0 50px rgba(0,0,0,0.5)', border: '2px solid var(--primary)',
+                        padding: '20px'
+                    }}>
+                        <h1 style={{ fontSize: '2.5rem', color: headerText.includes('You Won') ? '#00ff88' : '#ff0055', textAlign: 'center', textShadow: '0 0 20px currentColor', margin: '0.5rem 0' }}>
+                            {headerText.includes('You Won') ? 'VICTORY!' : 'DEFEAT!'}
+                        </h1>
+                        <p style={{ fontSize: '1.1rem', opacity: 0.9, marginBottom: '10px' }}>{headerText}</p>
+                        <div style={{
+                            display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px', width: '100%',
+                            margin: '1rem 0', justifyContent: 'center', alignItems: 'flex-start'
+                        }}>
+                            <div style={{ flex: '0 1 250px', width: '100%', textAlign: 'center' }}>
+                                <p style={{ marginBottom: '8px', color: 'var(--secondary)', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Your Final Board</p>
+                                <div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '5px' }}>
+                                    {grid.map((num, i) => (
+                                        <div key={i} style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: marked.includes(num) ? 'var(--primary)' : 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '0.8rem', color: marked.includes(num) ? 'white' : '#777', border: marked.includes(num) ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent' }}>{num}</div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div style={{ flex: '0 1 250px', width: '100%', textAlign: 'center' }}>
+                                <p style={{ marginBottom: '8px', color: 'var(--primary)', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Robot's Final Board</p>
+                                <div className="grid-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '5px' }}>
+                                    {robotGrid.map((num, i) => (
+                                        <div key={i} style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: robotMarked.includes(num) ? 'var(--primary)' : 'rgba(255,255,255,0.05)', borderRadius: '4px', fontSize: '0.8rem', color: robotMarked.includes(num) ? 'white' : '#777', border: robotMarked.includes(num) ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent' }}>{num}</div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', width: '100%', marginTop: '1rem' }}>
+                            <button className="btn-primary" style={{ flex: 1, padding: '15px', fontSize: '1rem' }} onClick={() => {
+                                setMarked([]); setRobotMarked([]); setWonLines([]); setStatus('setup'); setHeaderText('Setup Your Board'); randomizeGrid();
+                            }}>Play Again</button>
+                            <button className="btn-secondary" style={{ flex: 1, padding: '15px', fontSize: '1rem' }} onClick={() => window.location.href = '/'}>Exit</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 
